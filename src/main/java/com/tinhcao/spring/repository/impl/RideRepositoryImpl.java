@@ -1,13 +1,11 @@
 package com.tinhcao.spring.repository.impl;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.PreparedStatementCreator;
+import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
@@ -22,45 +20,41 @@ import com.tinhcao.spring.util.RideRowMapper;
 public class RideRepositoryImpl implements RideRepository {
 
 	@Autowired
-	private JdbcTemplate jdbcTemplate;
+	private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
 	@Override
 	public Ride createRide(Ride ride) {
+		BeanPropertySqlParameterSource beanPropertySqlParameterSource = new BeanPropertySqlParameterSource(ride);
 		KeyHolder keyHolder = new GeneratedKeyHolder();
-		jdbcTemplate.update(new PreparedStatementCreator() {
-			@Override
-			public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
-				PreparedStatement preparedStatement = con
-						.prepareStatement("insert into ride(name, duration) values (?,?)", new String[] { "id" });
-				preparedStatement.setString(1, ride.getName());
-				preparedStatement.setInt(2, ride.getDuration());
-				return preparedStatement;
-			}
-		}, keyHolder);
-		Number id = keyHolder.getKey();
-		return this.getRide(id.intValue());
+		namedParameterJdbcTemplate.update("insert into ride(name,duration) values(:name,:duration)", beanPropertySqlParameterSource, keyHolder);
+		ride.setId(keyHolder.getKey().intValue());
+		return ride;
 	}
 
 	@Override
 	public Ride getRide(int id) {
-		return jdbcTemplate.queryForObject("select * from ride where id = ?", new RideRowMapper(), id);
+		MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource();
+		mapSqlParameterSource.addValue("id", id);
+		return namedParameterJdbcTemplate.queryForObject("select * from ride where id = :id", mapSqlParameterSource, new RideRowMapper());
 	}
 
 	@Override
 	public List<Ride> getAllRides() {
-		return jdbcTemplate.query("select * from ride where id > 10", new RideRowMapper());
+		return namedParameterJdbcTemplate.query("select * from ride where id > 10", new RideRowMapper());
 	}
 
 	@Override
 	public Ride updateRide(Ride ride) {
-		jdbcTemplate.update("update ride set name = ?, duration = ? where id = ?", ride.getName(), ride.getDuration(),
-				ride.getId());
+		BeanPropertySqlParameterSource beanPropertySqlParameterSource = new BeanPropertySqlParameterSource(ride);
+		namedParameterJdbcTemplate.update("update ride set name = :name, duration = :duration where id = :id", beanPropertySqlParameterSource);
 		return ride;
 	}
 
 	@Override
 	public boolean deleteRide(int id) {
-		return jdbcTemplate.update("delete from ride where id = ?", id) != 0;
+		MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource();
+		mapSqlParameterSource.addValue("id", id);
+		return namedParameterJdbcTemplate.update("delete from ride where id = :id", mapSqlParameterSource) != 0;
 	}
 
 }
