@@ -1,17 +1,46 @@
 package com.tinhcao.spring.repository;
 
-import java.util.List;
-
 import com.tinhcao.spring.entity.Ride;
 
+import java.util.List;
+
 public interface RideRepository {
-	Ride createRide(Ride ride);
+    /**
+     * createRide
+     *
+     * @param ride ride
+     * @return Ride
+     */
+    Ride createRide(Ride ride);
 
-	Ride getRide(int id);
+    /**
+     * getRide
+     *
+     * @param id id
+     * @return Ride
+     */
+    Ride getRide(int id);
 
-	List<Ride> getAllRides();
+    /**
+     * getAllRides
+     *
+     * @return List<Ride>
+     */
+    List<Ride> getAllRides();
 
-	Ride updateRide(Ride ride);
+    /**
+     * updateRide
+     *
+     * @param ride ride
+     * @return Ride
+     */
+    Ride updateRide(Ride ride);
 
-	boolean deleteRide(int id);
+    /**
+     * deleteRide
+     *
+     * @param id id
+     * @return boolean
+     */
+    boolean deleteRide(int id);
 }
